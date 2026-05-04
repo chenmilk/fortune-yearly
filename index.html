@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>姓名五行分析 - 甄好運姓名學專用</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f8f9fa; padding: 20px; text-align: center; color: #333; }
+        .input-box { background: white; border: 1px solid #ddd; border-radius: 15px; padding: 20px; max-width: 400px; margin: 0 auto 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        input { width: 80%; padding: 12px; margin: 8px; text-align: center; font-size: 18px; border: 1px solid #ccc; border-radius: 8px; }
+        button { width: 85%; padding: 14px; background-color: #800000; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:disabled { background-color: #bbb; cursor: not-allowed; }
+        
+        .result-frame { border: 2px solid maroon; border-radius: 15px; padding: 20px; max-width: 450px; margin: 0 auto; display: none; background-color: #FFFBFA; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        table { margin: 0 auto; border-collapse: collapse; width: 100%; }
+        
+        /* 統一高度解決間距問題 */
+        .char-row { height: 65px; }
+        .arrow-row { height: 50px; }
+        
+        .stroke-text { font-size: 16px; color: #aaa; width: 45px; }
+        .char-text { font-size: 32px; font-weight: bold; width: 85px; color: black; }
+        .num-text { font-size: 24px; color: #483D8B; width: 55px; }
+        .wx-text { font-size: 20px; color: #483D8B; width: 55px; }
+        .ge-label { font-size: 18px; color: #483D8B; font-weight: bold; width: 85px; text-align: left; }
+        
+        .total-box { font-size: 28px; color: darkred; font-weight: bold; margin-top: 25px; border-top: 1.5px solid #ddd; padding-top: 15px; }
+        #status { font-size: 13px; color: #888; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h2 style="margin-bottom: 5px; line-height: 1.2;">姓名五行分析</h2>
+    <div style="font-size: 18px; color: #666; margin-bottom: 15px; font-weight: normal;">甄好運姓名學專用</div>
+    <div id="status">正在同步字典數據...</div>
+    <div class="input-box">
+        <input type="text" id="lName" placeholder="姓" maxlength="2">
+        <input type="text" id="fName" placeholder="名" maxlength="2">
+        <button id="btnRun" onclick="analyze()" disabled>確認鑑定</button>
+    </div>
+
+    <div id="resultFrame" class="result-frame">
+        <table id="resultTable"></table>
+        <div id="totalBox" class="total-box"></div>
+    </div>
+
+    <script>
+        let dictionary = {};
+        const btn = document.getElementById('btnRun');
+        const status = document.getElementById('status');
+
+        // 核心邏輯：優先修正筆劃表
+        function getStrokes(char) {
+            const customStrokes = {
+                '互': 4, '片': 4, '氏': 4, '及': 4, '之': 4, '王': 4,
+                '瓦': 5, '台': 5,
+                '巡': 6, '卉': 6,
+                '廷': 7, '初': 7, '秀': 7, '成': 7,
+                '亞': 8, '武': 8, '昆': 8, '沛': 8, '牧': 8, '弢': 8, '去': 8, '幺': 8,
+                '政': 9, '盈': 9, '建': 9, '妍': 9, '致': 9, '修': 9,
+                '哲': 10, '卿': 10, '娜': 10, '育': 10,
+                '屏': 11, '胡': 11, '強': 11, '迎': 11, '閏': 11, '一': 11, '弓': 11, '丿': 11,
+                '傑': 12, '黃': 12, '盛': 12, '勝': 12, '為': 12, '能': 12, '胸': 12, '涵': 12,
+                '溫': 13, '新': 13, '敬': 13, '雋': 13, '淵': 13,
+                '郎': 14, '鳳': 14, '萍': 14, '慈': 14, '嘉': 14,
+                '萬': 15, '興': 15, '霈': 15, '數': 15, '寬': 15, '豎': 15, '履': 15,
+                '學': 16, '樺': 16, '璇': 16, '閣': 16, '潔': 16, '頤': 16,
+                '鴻': 17, '臨': 17, '燦': 17,
+                '戴': 18, '豐': 18, '珞': 18, '魏': 18,
+                '蕭': 19, '覺': 19, '贊': 19,
+                '羅': 20, '寶': 20, '藏': 20, '譽': 20, '馨': 20,
+                '屬': 21,
+                '龔': 22, '響': 22, '霽': 22,
+                '蘭': 23, '麟': 23,
+                '艷': 24
+            };
+
+            if (customStrokes[char]) return customStrokes[char];
+            return dictionary[char] || 0;
+        }
+
+        // 維持你原本的 loadDict 名稱，這是針對瘦身後檔案的最新版本
+        async function loadDict() {
+            try {
+                // 檔名改成 slim_a.txt, slim_b.txt
+                const files = ['slim_a.txt', 'slim_b.txt'];
+                for (const file of files) {
+                    const response = await fetch(file);
+                    if (!response.ok) throw new Error(file + " 讀取失敗");
+                    const data = await response.json();
+                    
+                    // 因為檔案已經瘦身，data 直接就是 {"字": 筆劃}
+                    // 所以不需要再寫 .strokes_total，直接指定即可
+                    for (let key in data) {
+                        dictionary[key] = data[key];
+                    }
+                }
+                const count = Object.keys(dictionary).length;
+                status.innerText = "✅ 字典已準備就緒 (共 " + count + " 字)";
+                btn.disabled = false;
+            } catch (err) {
+                status.innerHTML = "❌ <span style='color:red'>字典載入異常，請確認 slim_a.txt 與 slim_b.txt 是否存在</span>";
+                console.error(err);
+            }
+        }
+        loadDict();
+
+        function getWX(n) {
+            const t = n % 10;
+            const map = {1:"木", 2:"木", 3:"火", 4:"火", 5:"土", 6:"土", 7:"金", 8:"金", 9:"水", 0:"水"};
+            return map[t];
+        }
+
+        function getRelationInfo(up, down) {
+            const getIdx = (n) => {
+                const t = n % 10;
+                if (t==1||t==2) return 0; if (t==3||t==4) return 1;
+                if (t==5||t==6) return 2; if (t==7||t==8) return 3; return 4;
+            };
+            const u = getIdx(up), d = getIdx(down);
+            if (u == d) return { type: "無", dir: "" };
+            if ((u + 1) % 5 == d) return { type: "生", dir: "下" };
+            if ((d + 1) % 5 == u) return { type: "生", dir: "上" };
+            const ke = [0, 2, 4, 1, 3];
+            const ui = ke.indexOf(u), di = ke.indexOf(d);
+            if ((ui + 1) % 5 == di) return { type: "剋", dir: "下" };
+            if ((di + 1) % 5 == ui) return { type: "剋", dir: "上" };
+            return { type: "無", dir: "" };
+        }
+
+        function createArrowSvg(info) {
+            if (info.type === "無") return "";
+            const isSheng = info.type === "生";
+            const isDown = info.dir === "下";
+            let head = isSheng ? (isDown ? "M -5,-8 L 0,0 L 5,-8" : "M -5,8 L 0,0 L 5,8") 
+                               : (isDown ? "M -6,-10 L 6,-10 L 0,2 Z" : "M -6,10 L 6,10 L 0,-2 Z");
+            const y = isDown ? 35 : 5;
+            return `<svg width="40" height="45" style="display:block; margin:0 auto;">
+                <line x1="20" y1="5" x2="20" y2="35" stroke="red" stroke-width="2" />
+                <path d="${head}" fill="${isSheng ? 'none' : 'red'}" stroke="red" stroke-width="2" transform="translate(20,${y})" />
+            </svg>`;
+        }
+
+        function analyze() {
+            const last = document.getElementById('lName').value.trim();
+            const first = document.getElementById('fName').value.trim();
+            if (!last || !first) return;
+
+            const l1 = getStrokes(last[0]), l2 = last.length > 1 ? getStrokes(last[1]) : 0;
+            const f1 = getStrokes(first[0]), f2 = first.length > 1 ? getStrokes(first[1]) : 0;
+
+            const tian = last.length == 1 ? l1 + 1 : l1 + l2;
+            const ren = (l1 + l2) + f1;
+            const di = first.length == 1 ? f1 + 1 : f1 + f2;
+            const zong = l1 + l2 + f1 + f2;
+
+            const table = document.getElementById('resultTable');
+            table.innerHTML = "";
+            let html = "";
+
+            if (last.length == 1) {
+                html += `<tr class="char-row"><td class="stroke-text">${l1}</td><td class="char-text">${last[0]}</td><td class="num-text">${tian}</td><td class="wx-text">${getWX(tian)}</td><td class="ge-label">天格</td></tr>`;
+            } else {
+                html += `<tr class="char-row"><td class="stroke-text">${l1}</td><td class="char-text">${last[0]}</td><td></td><td></td><td></td></tr>`;
+                html += `<tr class="char-row"><td class="stroke-text">${l2}</td><td class="char-text">${last[1]}</td><td class="num-text">${tian}</td><td class="wx-text">${getWX(tian)}</td><td class="ge-label">天格</td></tr>`;
+            }
+
+            html += `<tr class="arrow-row"><td></td><td></td><td></td><td>${createArrowSvg(getRelationInfo(tian, ren))}</td><td></td></tr>`;
+            html += `<tr class="char-row"><td class="stroke-text">${f1}</td><td class="char-text">${first[0]}</td><td class="num-text">${ren}</td><td class="wx-text">${getWX(ren)}</td><td class="ge-label">人格</td></tr>`;
+            html += `<tr class="arrow-row"><td></td><td></td><td></td><td>${createArrowSvg(getRelationInfo(ren, di))}</td><td></td></tr>`;
+
+            if (first.length > 1) {
+                html += `<tr class="char-row"><td class="stroke-text">${f2}</td><td class="char-text">${first[1]}</td><td class="num-text">${di}</td><td class="wx-text">${getWX(di)}</td><td class="ge-label">地格</td></tr>`;
+            } else {
+                html += `<tr class="char-row"><td class="stroke-text">1</td><td></td><td class="num-text">${di}</td><td class="wx-text">${getWX(di)}</td><td class="ge-label">地格</td></tr>`;
+            }
+
+            table.innerHTML = html;
+            document.getElementById('totalBox').innerText = "總格 ： " + zong;
+            document.getElementById('resultFrame').style.display = "block";
+        }
+    </script>
+</>
+</html>
