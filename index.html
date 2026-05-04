@@ -6,32 +6,36 @@
     <title>姓名流年分析 - 甄好運姓名學專用</title>
     <style>
         body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f8f9fa; padding: 20px; text-align: center; color: #333; }
-        .input-box { background: white; border: 1px solid #ddd; border-radius: 15px; padding: 20px; max-width: 400px; margin: 0 auto 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        input { width: 80%; padding: 12px; margin: 8px; text-align: center; font-size: 18px; border: 1px solid #ccc; border-radius: 8px; }
-        button { width: 85%; padding: 14px; background-color: #800000; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .input-box { background: white; border: 1px solid #ddd; border-radius: 15px; padding: 20px; max-width: 420px; margin: 0 auto 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .input-group { margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 15px; }
+        .input-group:last-child { border-bottom: none; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #800000; }
+        input { width: 85%; padding: 12px; margin: 5px; text-align: center; font-size: 18px; border: 1px solid #ccc; border-radius: 8px; }
+        .short-input { width: 35%; }
+        
+        button { width: 90%; padding: 16px; background-color: #800000; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; }
         button:disabled { background-color: #bbb; cursor: not-allowed; }
         
         .result-frame { border: 2px solid maroon; border-radius: 15px; padding: 20px; max-width: 450px; margin: 0 auto; display: none; background-color: #FFFBFA; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         table { margin: 0 auto; border-collapse: collapse; width: 100%; }
         
-        /* 統一高度解決間距問題 */
         .char-row { height: 65px; }
         .arrow-row { height: 50px; }
-        
         .stroke-text { font-size: 16px; color: #aaa; width: 45px; }
         .char-text { font-size: 32px; font-weight: bold; width: 85px; color: black; }
         .num-text { font-size: 24px; color: #483D8B; width: 55px; }
         .wx-text { font-size: 20px; color: #483D8B; width: 55px; }
         .ge-label { font-size: 18px; color: #483D8B; font-weight: bold; width: 85px; text-align: left; }
         
-        .total-box { font-size: 28px; color: darkred; font-weight: bold; margin-top: 25px; border-top: 1.5px solid #ddd; padding-top: 15px; }
+        .total-box { font-size: 28px; color: darkred; font-weight: bold; margin-top: 20px; border-top: 1.5px solid #ddd; padding-top: 15px; }
         #status { font-size: 13px; color: #888; margin-bottom: 10px; }
 
-        /* 流年專用樣式 */
-        .yearly-box { border: 2px solid red; border-radius: 15px; padding: 20px; max-width: 400px; margin: 20px auto; display: none; background-color: white; }
-        .range-arrow { display: flex; align-items: center; justify-content: center; margin: 15px 0; font-weight: bold; color: #555; font-size: 14px;}
-        .arrow-line { height: 2px; background: #800000; flex-grow: 1; position: relative; margin: 0 10px; min-width: 30px;}
-        .arrow-line::after { content: ""; position: absolute; right: -5px; top: -4px; border-left: 8px solid #800000; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+        /* 流年顯示樣式 */
+        .fortune-display { margin: 15px 0; border: 1px solid #ffcccc; padding: 15px; border-radius: 10px; background: #fff; }
+        .range-text { font-size: 16px; font-weight: bold; color: #555; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .range-text span { white-space: nowrap; }
+        .arrow-path { color: #800000; font-weight: bold; font-size: 20px; }
+        .fortune-title { font-size: 24px; font-weight: bold; color: #800000; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -40,22 +44,32 @@
     <div id="status">正在同步字典數據...</div>
     
     <div class="input-box">
-        <input type="text" id="lName" placeholder="姓" maxlength="2">
-        <input type="text" id="fName" placeholder="名" maxlength="2">
-        <button id="btnRun" onclick="analyze()" disabled>確認鑑定</button>
-    </div>
+        <div class="input-group">
+            <label>1. 輸入鑑定姓名</label>
+            <input type="text" id="lName" placeholder="姓" maxlength="2" style="width: 40%;">
+            <input type="text" id="fName" placeholder="名" maxlength="2" style="width: 40%;">
+        </div>
 
-    <div id="yearlySection" class="yearly-box">
-        <h3 style="margin-top:0; color:#800000;">姓名流年分析</h3>
-        <input type="number" id="yearCurrent" placeholder="計算民國年份 (如 115)">
-        <p style="margin: 5px 0; font-size: 14px; color: #888;">出生日期</p>
-        <input type="date" id="birthDate">
-        <button onclick="calculateYearFortune()" style="margin-top:10px; background-color: #555;">計算流年結果</button>
-        <div id="fortuneResult"></div>
+        <div class="input-group">
+            <label>2. 流年參數設定</label>
+            <input type="number" id="yearCurrent" placeholder="計算民國年 (如 115)">
+            <div style="margin-top: 10px;">
+                <span style="font-weight: bold; color: #666;">出生：民國 </span>
+                <input type="number" id="birthYear" class="short-input" placeholder="年">
+                <span style="font-weight: bold; color: #666;"> 年 </span>
+                <input type="number" id="birthMonth" class="short-input" placeholder="月">
+                <span style="font-weight: bold; color: #666;"> 月 </span>
+            </div>
+        </div>
+
+        <button id="btnRun" onclick="fullAnalyze()" disabled>計算鑑定與流年結果</button>
     </div>
 
     <div id="resultFrame" class="result-frame">
+        <div id="fortuneDisplay" class="fortune-display"></div>
+        
         <table id="resultTable"></table>
+        
         <div id="totalBox" class="total-box"></div>
     </div>
 
@@ -92,11 +106,9 @@
                     const data = await response.json();
                     for (let key in data) { dictionary[key] = data[key]; }
                 }
-                status.innerText = "✅ 字典已準備就緒 (共 " + Object.keys(dictionary).length + " 字)";
+                status.innerText = "✅ 數據已就緒 (共 " + Object.keys(dictionary).length + " 字)";
                 btn.disabled = false;
-            } catch (err) {
-                status.innerHTML = "❌ 字典載入異常";
-            }
+            } catch (err) { status.innerHTML = "❌ 字典載入失敗"; }
         }
         loadDict();
 
@@ -135,11 +147,19 @@
             </svg>`;
         }
 
-        function analyze() {
+        function fullAnalyze() {
             const last = document.getElementById('lName').value.trim();
             const first = document.getElementById('fName').value.trim();
-            if (!last || !first) return;
+            const YY = parseInt(document.getElementById('yearCurrent').value);
+            const XX = parseInt(document.getElementById('birthYear').value);
+            const M = parseInt(document.getElementById('birthMonth').value);
 
+            if (!last || !first || !YY || !XX || !M) {
+                alert("請完整填寫姓名與流年參數（年、月）");
+                return;
+            }
+
+            // --- 姓名鑑定邏輯 ---
             const l1 = getStrokes(last[0]), l2 = last.length > 1 ? getStrokes(last[1]) : 0;
             const f1 = getStrokes(first[0]), f2 = first.length > 1 ? getStrokes(first[1]) : 0;
 
@@ -149,74 +169,58 @@
             const zong = l1 + l2 + f1 + f2;
 
             const table = document.getElementById('resultTable');
-            table.innerHTML = "";
             let html = "";
-
             if (last.length == 1) {
                 html += `<tr class="char-row"><td class="stroke-text">${l1}</td><td class="char-text">${last[0]}</td><td class="num-text">${tian}</td><td class="wx-text">${getWX(tian)}</td><td class="ge-label">天格</td></tr>`;
             } else {
                 html += `<tr class="char-row"><td class="stroke-text">${l1}</td><td class="char-text">${last[0]}</td><td></td><td></td><td></td></tr>`;
                 html += `<tr class="char-row"><td class="stroke-text">${l2}</td><td class="char-text">${last[1]}</td><td class="num-text">${tian}</td><td class="wx-text">${getWX(tian)}</td><td class="ge-label">天格</td></tr>`;
             }
-
             html += `<tr class="arrow-row"><td></td><td></td><td></td><td>${createArrowSvg(getRelationInfo(tian, ren))}</td><td></td></tr>`;
             html += `<tr class="char-row"><td class="stroke-text">${f1}</td><td class="char-text">${first[0]}</td><td class="num-text">${ren}</td><td class="wx-text">${getWX(ren)}</td><td class="ge-label">人格</td></tr>`;
             html += `<tr class="arrow-row"><td></td><td></td><td></td><td>${createArrowSvg(getRelationInfo(ren, di))}</td><td></td></tr>`;
-
             if (first.length > 1) {
                 html += `<tr class="char-row"><td class="stroke-text">${f2}</td><td class="char-text">${first[1]}</td><td class="num-text">${di}</td><td class="wx-text">${getWX(di)}</td><td class="ge-label">地格</td></tr>`;
             } else {
                 html += `<tr class="char-row"><td class="stroke-text">1</td><td></td><td class="num-text">${di}</td><td class="wx-text">${getWX(di)}</td><td class="ge-label">地格</td></tr>`;
             }
-
             table.innerHTML = html;
-            document.getElementById('totalBox').innerText = "總格 ： " + zong;
-            document.getElementById('resultFrame').style.display = "block";
-            document.getElementById('yearlySection').style.display = "block"; 
-        }
 
-        function calculateYearFortune() {
-            const YY = parseInt(document.getElementById('yearCurrent').value);
-            const bDateStr = document.getElementById('birthDate').value;
-            if (!YY || !bDateStr) { alert("請填寫流年年份與生日"); return; }
-
-            const bDate = new Date(bDateStr);
-            const XX = bDate.getFullYear() - 1911;
-            const bMonth = bDate.getMonth() + 1;
-
-            let baseAge = YY - XX + 1;
-            let finalAge = baseAge;
-            if (bMonth >= 8) finalAge += 1;
-            if (bMonth <= 6) finalAge -= 1; 
-
-            const zongStr = document.getElementById('totalBox').innerText;
-            const zong = parseInt(zongStr.replace(/\D/g, ''));
-            const cycle = ["長生", "沐浴", "冠帶", "臨官", "帝旺", "衰", "病", "死", "墓", "胎", "養", "絕"];
+            // --- 流年計算邏輯 ---
+            // 歲數 = (計算年 - 出生年) + 1
+            const age = (YY - XX) + 1;
             
+            // 區間顯示：計算年前一年/月-6 <-> 計算年/月-6
+            let rangeStartYear = YY - 1;
+            let rangeEndYear = YY;
+            let rangeMonth = M - 6;
+            if (rangeMonth <= 0) {
+                rangeMonth += 12;
+                rangeStartYear -= 1;
+                rangeEndYear -= 1;
+            }
+
+            // 運勢循環：冠帶(0), 臨官(1), 帝旺(2), 衰(3), 病(4), 死(5), 絕(6), 胎(7), 養(8), 長生(9)
+            const cycle = ["冠帶", "臨官", "帝旺", "衰", "病", "死", "絕", "胎", "養", "長生"];
             const startTen = zong % 10;
-            const endTen = finalAge % 10;
+            const endTen = age % 10;
             const steps = (endTen - startTen + 10) % 10;
-            const finalIndex = (startTen + steps) % 12;
+            const fortuneResult = cycle[steps % 10];
 
-            let startYear = XX + baseAge - 1;
-            let startMonth = bMonth - 6;
-            if (startMonth <= 0) { startMonth += 12; startYear -= 1; }
-            let endYear = XX + baseAge - 1;
-            let endMonth = bMonth + 6;
-            if (endMonth > 12) { endMonth -= 12; endYear += 1; }
-
-            const resultDiv = document.getElementById('fortuneResult');
-            resultDiv.innerHTML = `
-                <div class="range-arrow">
-                    <span>民國 ${startYear}年 ${startMonth}月</span>
-                    <div class="arrow-line"></div>
-                    <span style="color:red; min-width:50px;">${finalAge} 歲</span>
-                    <div class="arrow-line"></div>
-                    <span>民國 ${endYear}年 ${endMonth}月</span>
+            const fortuneDiv = document.getElementById('fortuneDisplay');
+            fortuneDiv.innerHTML = `
+                <div class="range-text">
+                    <span>民國 ${rangeStartYear}年 ${rangeMonth}月</span>
+                    <span class="arrow-path">───▶</span>
+                    <span style="color:red; font-size: 22px;"> ${age} 歲 </span>
+                    <span class="arrow-path">◀───</span>
+                    <span>民國 ${rangeEndYear}年 ${rangeMonth}月</span>
                 </div>
-                <div style="font-size: 22px; font-weight: bold; color: maroon;">流年運勢：${cycle[finalIndex]}</div>
+                <div class="fortune-title">流年：${fortuneResult}</div>
             `;
-            document.getElementById('totalBox').innerHTML = `總格 ： ${zong} <span style="font-size:20px; color:blue;">(${cycle[finalIndex]})</span>`;
+
+            document.getElementById('totalBox').innerHTML = `總格 ： ${zong} <span style="font-size:20px; color:blue;">(${fortuneResult})</span>`;
+            document.getElementById('resultFrame').style.display = "block";
         }
     </script>
 </body>
