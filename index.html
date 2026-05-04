@@ -44,6 +44,72 @@
     </div>
 
     <script>
+
+        function calculateYearFortune() {
+            const currentYearInput = document.getElementById('yearCurrent').value;
+            const birthDateInput = document.getElementById('birthDate').value;
+            
+            if (!currentYearInput || !birthDateInput) {
+                alert("請填寫流年年份與出生年月日");
+                return;
+            }
+
+            const currentYear = parseInt(currentYearInput);
+            const birthDate = new Date(birthDateInput);
+            
+            // 轉換民國年
+            const birthYearString = birthDateInput.split('-')[0];
+            const birthYear = parseInt(birthYearString) - 1911;
+            
+            // 1. 計算基本虛歲：YY - XX + 1
+            let baseAge = (currentYear - birthYear) + 1;
+            
+            // 2. 跨年校正邏輯：8-12月出生，歲數需再跨一年
+            const bMonth = birthDate.getMonth() + 1; // 1-12月
+            let finalAge = baseAge;
+            if (bMonth >= 8 && bMonth <= 12) {
+                finalAge += 1;
+            }
+
+            // 3. 取得總格筆劃 (必須先進行姓名鑑定才有數據)
+            const totalBox = document.getElementById('totalBox');
+            if (!totalBox || totalBox.innerText === "") {
+                alert("請先完成上方的「姓名鑑定」，取得總格筆劃！");
+                return;
+            }
+            const zongStrokes = parseInt(totalBox.innerText.replace(/\D/g, ''));
+            
+            // 4. 運勢循環邏輯 (12長生運)
+            const cycle = ["長生", "沐浴", "冠帶", "臨官", "帝旺", "衰", "病", "死", "墓", "胎", "養", "絕"];
+            
+            // 終點 (10) 與 起點 (10)
+            const endTen = finalAge % 10;
+            const startTen = zongStrokes % 10;
+            
+            // 計算步數 (走幾步可以從 start 到 end)
+            const steps = (endTen - startTen + 10) % 10;
+            
+            // 找到對應的運勢索引
+            const finalIndex = (startTen + steps) % 12;
+
+            // 5. 輸出結果
+            const resultDiv = document.getElementById('fortuneResult');
+            resultDiv.innerHTML = `
+                <div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px;">
+                    流年年份：民國 ${currentYear} 年<br>
+                    出生年月日：民國 ${birthYear} 年 ${bMonth} 月 ${birthDate.getDate()} 日
+                </div>
+                <div>虛歲計算 (YY-XX+1)：<strong>${baseAge} 歲</strong></div>
+                <div style="color: Maroon;">跨年判定虛歲：<strong>${finalAge} 歲</strong></div>
+                <div style="font-size: 20px; font-weight: bold; margin-top: 10px;">
+                    流年運勢：${cycle[finalIndex]}
+                </div>
+            `;
+            
+            // 將結果寫回總格旁邊 (如你所求)
+            totalBox.innerHTML = `總格 ： ${zongStrokes} (${cycle[finalIndex]})`;
+        }
+    
         let dictionary = {};
         const btn = document.getElementById('btnRun');
         const status = document.getElementById('status');
