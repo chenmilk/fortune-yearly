@@ -30,12 +30,13 @@
         .total-box { font-size: 28px; color: darkred; font-weight: bold; margin-top: 20px; border-top: 1.5px solid #ddd; padding-top: 15px; }
         #status { font-size: 13px; color: #888; margin-bottom: 10px; }
 
-        /* 流年顯示樣式 */
-        .fortune-display { margin: 15px 0; border: 1px solid #ffcccc; padding: 15px; border-radius: 10px; background: #fff; }
-        .range-text { font-size: 16px; font-weight: bold; color: #555; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .range-text span { white-space: nowrap; }
-        .arrow-path { color: #800000; font-weight: bold; font-size: 20px; }
-        .fortune-title { font-size: 24px; font-weight: bold; color: #800000; margin-top: 10px; }
+        /* 新版流年顯示：手繪風格線條 */
+        .fortune-display { margin: 20px 0; padding: 10px; border-radius: 10px; }
+        .age-line-container { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 10px; }
+        .date-text { font-size: 15px; color: #666; font-weight: bold; width: 110px; }
+        .line-wrapper { flex-grow: 1; position: relative; height: 30px; display: flex; align-items: flex-end; border-bottom: 2px solid #800000; margin-bottom: 5px; }
+        .age-text { position: absolute; width: 100%; text-align: center; top: -5px; font-size: 24px; font-weight: bold; color: red; }
+        .fortune-title { font-size: 26px; font-weight: bold; color: #800000; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -159,10 +160,8 @@
                 return;
             }
 
-            // --- 姓名鑑定邏輯 ---
             const l1 = getStrokes(last[0]), l2 = last.length > 1 ? getStrokes(last[1]) : 0;
             const f1 = getStrokes(first[0]), f2 = first.length > 1 ? getStrokes(first[1]) : 0;
-
             const tian = last.length == 1 ? l1 + 1 : l1 + l2;
             const ren = (l1 + l2) + f1;
             const di = first.length == 1 ? f1 + 1 : f1 + f2;
@@ -186,21 +185,23 @@
             }
             table.innerHTML = html;
 
-            // --- 流年計算邏輯 ---
-            // 歲數 = (計算年 - 出生年) + 1
+            // --- 修正後的流年邏輯 ---
             const age = (YY - XX) + 1;
             
-            // 區間顯示：計算年前一年/月-6 <-> 計算年/月-6
-            let rangeStartYear = YY - 1;
-            let rangeEndYear = YY;
-            let rangeMonth = M - 6;
-            if (rangeMonth <= 0) {
-                rangeMonth += 12;
-                rangeStartYear -= 1;
-                rangeEndYear -= 1;
+            // 生日前後六個月邏輯
+            let m_calc = M - 6;
+            let startYear, endYear, displayMonth;
+            if (m_calc <= 0) {
+                displayMonth = m_calc + 12;
+                startYear = YY - 1;
+                endYear = YY;
+            } else {
+                displayMonth = m_calc;
+                startYear = YY;
+                endYear = YY + 1;
             }
 
-            // 運勢循環：冠帶(0), 臨官(1), 帝旺(2), 衰(3), 病(4), 死(5), 絕(6), 胎(7), 養(8), 長生(9)
+            // 運勢循環 10 個
             const cycle = ["冠帶", "臨官", "帝旺", "衰", "病", "死", "絕", "胎", "養", "長生"];
             const startTen = zong % 10;
             const endTen = age % 10;
@@ -209,14 +210,14 @@
 
             const fortuneDiv = document.getElementById('fortuneDisplay');
             fortuneDiv.innerHTML = `
-                <div class="range-text">
-                    <span>民國 ${rangeStartYear}年 ${rangeMonth}月</span>
-                    <span class="arrow-path">───▶</span>
-                    <span style="color:red; font-size: 22px;"> ${age} 歲 </span>
-                    <span class="arrow-path">◀───</span>
-                    <span>民國 ${rangeEndYear}年 ${rangeMonth}月</span>
+                <div class="age-line-container">
+                    <span class="date-text">民國 ${startYear}年 ${displayMonth}月</span>
+                    <div class="line-wrapper">
+                        <span class="age-text">${age} 歲</span>
+                    </div>
+                    <span class="date-text">民國 ${endYear}年 ${displayMonth}月</span>
                 </div>
-                <div class="fortune-title">流年：${fortuneResult}</div>
+                <div class="fortune-title">流年 ： ${fortuneResult}</div>
             `;
 
             document.getElementById('totalBox').innerHTML = `總格 ： ${zong} <span style="font-size:20px; color:blue;">(${fortuneResult})</span>`;
