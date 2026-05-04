@@ -30,13 +30,18 @@
         .total-box { font-size: 28px; color: darkred; font-weight: bold; margin-top: 20px; border-top: 1.5px solid #ddd; padding-top: 15px; }
         #status { font-size: 13px; color: #888; margin-bottom: 10px; }
 
-        /* 新版流年顯示：手繪風格線條 */
-        .fortune-display { margin: 20px 0; padding: 10px; border-radius: 10px; }
-        .age-line-container { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 10px; }
-        .date-text { font-size: 15px; color: #666; font-weight: bold; width: 110px; }
-        .line-wrapper { flex-grow: 1; position: relative; height: 30px; display: flex; align-items: flex-end; border-bottom: 2px solid #800000; margin-bottom: 5px; }
-        .age-text { position: absolute; width: 100%; text-align: center; top: -5px; font-size: 24px; font-weight: bold; color: red; }
-        .fortune-title { font-size: 26px; font-weight: bold; color: #800000; margin-top: 15px; }
+        /* 流年專用彈性樣式 */
+        .fortune-display { margin: 20px 0; padding: 10px; border-radius: 10px; width: 100%; box-sizing: border-box; }
+        .age-line-container { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 10px; width: 100%; flex-wrap: nowrap; }
+        .date-text { font-size: 14px; color: #666; font-weight: bold; flex: 0 0 auto; white-space: nowrap; }
+        .line-wrapper { flex: 1 1 auto; position: relative; height: 40px; display: flex; align-items: flex-end; border-bottom: 2px solid #800000; margin-bottom: 10px; min-width: 40px; }
+        .age-text { position: absolute; width: 100%; text-align: center; bottom: 5px; font-size: 24px; font-weight: bold; color: red; white-space: nowrap; }
+        .fortune-title { font-size: 26px; font-weight: bold; color: #800000; margin-top: 10px; }
+
+        @media screen and (max-width: 360px) {
+            .date-text { font-size: 12px; }
+            .age-text { font-size: 20px; }
+        }
     </style>
 </head>
 <body>
