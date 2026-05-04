@@ -38,6 +38,39 @@
         <button id="btnRun" onclick="analyze()" disabled>確認鑑定</button>
     </div>
 
+<div id="yearly-section" style="border: 2px solid red; padding: 10px; margin: 20px 0;">
+    <h3>姓名流年分析</h3>
+    <input type="number" id="yearCurrent" placeholder="輸入流年民國年 (如 115)">
+    <input type="date" id="birthDate">
+    <button onclick="calculateYearFortune()">開始計算流年</button>
+    <div id="fortuneResult" style="margin-top: 10px; font-size: 18px;"></div>
+</div>
+
+<script>
+function calculateYearFortune() {
+    const currentYear = parseInt(document.getElementById('yearCurrent').value);
+    const birthDate = new Date(document.getElementById('birthDate').value);
+    const birthYear = birthDate.getFullYear() - 1911;
+    
+    // 計算虛歲
+    let age = (currentYear - birthYear) + 1;
+    const bMonth = birthDate.getMonth() + 1;
+    if (bMonth >= 8 && bMonth <= 12) age -= 1; // 跨年修正
+
+    // 取得總格 (假設你的網頁上有個 ID 為 totalBox 的元素)
+    const zongVal = parseInt(document.getElementById('totalBox').innerText.replace(/\D/g, ''));
+    
+    // 運勢循環陣列
+    const cycle = ["長生", "沐浴", "冠帶", "臨官", "帝旺", "衰", "病", "死", "墓", "胎", "養", "絕"];
+    const start = zongVal % 10;
+    const end = age % 10;
+    const finalIndex = (start + (end - 1)) % 12;
+
+    document.getElementById('fortuneResult').innerHTML = 
+        `<div>年齡: ${age} 歲</div><div>流年運勢: <strong>${cycle[finalIndex]}</strong></div>`;
+}
+</script>
+    
     <div id="resultFrame" class="result-frame">
         <table id="resultTable"></table>
         <div id="totalBox" class="total-box"></div>
