@@ -14,8 +14,10 @@
         .result-frame { border: 2px solid maroon; border-radius: 15px; padding: 20px; max-width: 450px; margin: 0 auto; display: none; background-color: #FFFBFA; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         table { margin: 0 auto; border-collapse: collapse; width: 100%; }
         
+        /* 統一高度解決間距問題 */
         .char-row { height: 65px; }
         .arrow-row { height: 50px; }
+        
         .stroke-text { font-size: 16px; color: #aaa; width: 45px; }
         .char-text { font-size: 32px; font-weight: bold; width: 85px; color: black; }
         .num-text { font-size: 24px; color: #483D8B; width: 55px; }
@@ -26,9 +28,9 @@
         #status { font-size: 13px; color: #888; margin-bottom: 10px; }
 
         /* 流年專用樣式 */
-        .yearly-box { border: 2px solid #800000; border-radius: 15px; padding: 20px; max-width: 400px; margin: 0 auto 20px; background-color: #fff; }
-        .range-arrow { display: flex; align-items: center; justify-content: center; margin: 15px 0; font-weight: bold; color: #555; }
-        .arrow-line { height: 2px; background: #800000; flex-grow: 1; position: relative; margin: 0 10px; }
+        .yearly-box { border: 2px solid red; border-radius: 15px; padding: 20px; max-width: 400px; margin: 20px auto; display: none; background-color: white; }
+        .range-arrow { display: flex; align-items: center; justify-content: center; margin: 15px 0; font-weight: bold; color: #555; font-size: 14px;}
+        .arrow-line { height: 2px; background: #800000; flex-grow: 1; position: relative; margin: 0 10px; min-width: 30px;}
         .arrow-line::after { content: ""; position: absolute; right: -5px; top: -4px; border-left: 8px solid #800000; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
     </style>
 </head>
@@ -36,15 +38,15 @@
     <h2 style="margin-bottom: 5px; line-height: 1.2;">姓名流年分析</h2>
     <div style="font-size: 18px; color: #666; margin-bottom: 15px; font-weight: normal;">甄好運姓名學專用</div>
     <div id="status">正在同步字典數據...</div>
-
+    
     <div class="input-box">
         <input type="text" id="lName" placeholder="姓" maxlength="2">
         <input type="text" id="fName" placeholder="名" maxlength="2">
-        <button id="btnRun" onclick="analyze()" disabled>確認姓名鑑定</button>
+        <button id="btnRun" onclick="analyze()" disabled>確認鑑定</button>
     </div>
 
-    <div id="yearlySection" class="yearly-box" style="display:none;">
-        <h3 style="margin-top:0; color:#800000;">流年參數設定</h3>
+    <div id="yearlySection" class="yearly-box">
+        <h3 style="margin-top:0; color:#800000;">姓名流年分析</h3>
         <input type="number" id="yearCurrent" placeholder="計算民國年份 (如 115)">
         <p style="margin: 5px 0; font-size: 14px; color: #888;">出生日期</p>
         <input type="date" id="birthDate">
@@ -65,8 +67,7 @@
         function getStrokes(char) {
             const customStrokes = {
                 '互': 4, '片': 4, '氏': 4, '及': 4, '之': 4, '王': 4,
-                '瓦': 5, '台': 5, '巡': 6, '卉': 6,
-                '廷': 7, '初': 7, '秀': 7, '成': 7,
+                '瓦': 5, '台': 5, '巡': 6, '卉': 6, '廷': 7, '初': 7, '秀': 7, '成': 7,
                 '亞': 8, '武': 8, '昆': 8, '沛': 8, '牧': 8, '弢': 8, '去': 8, '幺': 8,
                 '政': 9, '盈': 9, '建': 9, '妍': 9, '致': 9, '修': 9,
                 '哲': 10, '卿': 10, '娜': 10, '育': 10,
@@ -76,10 +77,8 @@
                 '郎': 14, '鳳': 14, '萍': 14, '慈': 14, '嘉': 14,
                 '萬': 15, '興': 15, '霈': 15, '數': 15, '寬': 15, '豎': 15, '履': 15,
                 '學': 16, '樺': 16, '璇': 16, '閣': 16, '潔': 16, '頤': 16,
-                '鴻': 17, '臨': 17, '燦': 17,
-                '戴': 18, '豐': 18, '珞': 18, '魏': 18,
-                '蕭': 19, '覺': 19, '贊': 19,
-                '羅': 20, '寶': 20, '藏': 20, '譽': 20, '馨': 20,
+                '鴻': 17, '臨': 17, '燦': 17, '戴': 18, '豐': 18, '珞': 18, '魏': 18,
+                '蕭': 19, '覺': 19, '贊': 19, '羅': 20, '寶': 20, '藏': 20, '譽': 20, '馨': 20,
                 '屬': 21, '龔': 22, '響': 22, '霽': 22, '蘭': 23, '麟': 23, '艷': 24
             };
             return customStrokes[char] || dictionary[char] || 0;
@@ -96,7 +95,7 @@
                 status.innerText = "✅ 字典已準備就緒 (共 " + Object.keys(dictionary).length + " 字)";
                 btn.disabled = false;
             } catch (err) {
-                status.innerHTML = "❌ <span style='color:red'>字典載入失敗</span>";
+                status.innerHTML = "❌ 字典載入異常";
             }
         }
         loadDict();
@@ -106,57 +105,34 @@
             return map[n % 10];
         }
 
-        function calculateYearFortune() {
-            const YY = parseInt(document.getElementById('yearCurrent').value);
-            const bDateStr = document.getElementById('birthDate').value;
-            if (!YY || !bDateStr) { alert("請輸入流年年份與生日"); return; }
+        function getRelationInfo(up, down) {
+            const getIdx = (n) => {
+                const t = n % 10;
+                if (t==1||t==2) return 0; if (t==3||t==4) return 1;
+                if (t==5||t==6) return 2; if (t==7||t==8) return 3; return 4;
+            };
+            const u = getIdx(up), d = getIdx(down);
+            if (u == d) return { type: "無", dir: "" };
+            if ((u + 1) % 5 == d) return { type: "生", dir: "下" };
+            if ((d + 1) % 5 == u) return { type: "生", dir: "上" };
+            const ke = [0, 2, 4, 1, 3];
+            const ui = ke.indexOf(u), di = ke.indexOf(d);
+            if ((ui + 1) % 5 == di) return { type: "剋", dir: "下" };
+            if ((di + 1) % 5 == ui) return { type: "剋", dir: "上" };
+            return { type: "無", dir: "" };
+        }
 
-            const bDate = new Date(bDateStr);
-            const XX = bDate.getFullYear() - 1911;
-            const bMonth = bDate.getMonth() + 1;
-            const bDay = bDate.getDate();
-
-            // 1. 歲數計算
-            let baseAge = YY - XX + 1;
-            let finalAge = baseAge;
-            
-            // 跨年判定
-            if (bMonth >= 8) finalAge += 1;
-            if (bMonth <= 6 && bMonth >= 1) finalAge -= 1; 
-
-            // 2. 運勢計算
-            const zong = parseInt(document.getElementById('totalBox').innerText.replace(/\D/g, ''));
-            const cycle = ["長生", "沐浴", "冠帶", "臨官", "帝旺", "衰", "病", "死", "墓", "胎", "養", "絕"];
-            
-            const startTen = zong % 10;
-            const endTen = finalAge % 10;
-            const steps = (endTen - startTen + 10) % 10;
-            const finalIndex = (startTen + steps) % 12;
-
-            // 3. 區間日期計算 (生日前後半年)
-            let startYear = XX + finalAge - 1;
-            let startMonth = bMonth - 6;
-            if (startMonth <= 0) { startMonth += 12; startYear -= 1; }
-            
-            let endYear = XX + finalAge - 1;
-            let endMonth = bMonth + 6;
-            if (endMonth > 12) { endMonth -= 12; endYear += 1; }
-
-            // 4. 輸出顯示
-            const resultDiv = document.getElementById('fortuneResult');
-            resultDiv.innerHTML = `
-                <div class="range-arrow">
-                    <span>民國 ${startYear}年 ${startMonth}月</span>
-                    <div class="arrow-line"></div>
-                    <span style="color:red;">${finalAge} 歲</span>
-                    <div class="arrow-line"></div>
-                    <span>民國 ${endYear}年 ${endMonth}月</span>
-                </div>
-                <div style="font-size: 24px; font-weight: bold; color: maroon;">流年：${cycle[finalIndex]}</div>
-            `;
-            
-            // 同步顯示在總格
-            document.getElementById('totalBox').innerHTML = `總格 ： ${zong} <span style="font-size:20px; color:blue;">(${cycle[finalIndex]})</span>`;
+        function createArrowSvg(info) {
+            if (info.type === "無") return "";
+            const isSheng = info.type === "生";
+            const isDown = info.dir === "下";
+            let head = isSheng ? (isDown ? "M -5,-8 L 0,0 L 5,-8" : "M -5,8 L 0,0 L 5,8") 
+                               : (isDown ? "M -6,-10 L 6,-10 L 0,2 Z" : "M -6,10 L 6,10 L 0,-2 Z");
+            const y = isDown ? 35 : 5;
+            return `<svg width="40" height="45" style="display:block; margin:0 auto;">
+                <line x1="20" y1="5" x2="20" y2="35" stroke="red" stroke-width="2" />
+                <path d="${head}" fill="${isSheng ? 'none' : 'red'}" stroke="red" stroke-width="2" transform="translate(20,${y})" />
+            </svg>`;
         }
 
         function analyze() {
@@ -172,7 +148,10 @@
             const di = first.length == 1 ? f1 + 1 : f1 + f2;
             const zong = l1 + l2 + f1 + f2;
 
+            const table = document.getElementById('resultTable');
+            table.innerHTML = "";
             let html = "";
+
             if (last.length == 1) {
                 html += `<tr class="char-row"><td class="stroke-text">${l1}</td><td class="char-text">${last[0]}</td><td class="num-text">${tian}</td><td class="wx-text">${getWX(tian)}</td><td class="ge-label">天格</td></tr>`;
             } else {
@@ -180,10 +159,9 @@
                 html += `<tr class="char-row"><td class="stroke-text">${l2}</td><td class="char-text">${last[1]}</td><td class="num-text">${tian}</td><td class="wx-text">${getWX(tian)}</td><td class="ge-label">天格</td></tr>`;
             }
 
-            // 此處簡化箭頭與人格/地格顯示邏輯，維持你原本的結構
-            html += `<tr><td colspan="5" style="text-align:center; color:red; font-size:20px;">↓</td></tr>`;
+            html += `<tr class="arrow-row"><td></td><td></td><td></td><td>${createArrowSvg(getRelationInfo(tian, ren))}</td><td></td></tr>`;
             html += `<tr class="char-row"><td class="stroke-text">${f1}</td><td class="char-text">${first[0]}</td><td class="num-text">${ren}</td><td class="wx-text">${getWX(ren)}</td><td class="ge-label">人格</td></tr>`;
-            html += `<tr><td colspan="5" style="text-align:center; color:red; font-size:20px;">↓</td></tr>`;
+            html += `<tr class="arrow-row"><td></td><td></td><td></td><td>${createArrowSvg(getRelationInfo(ren, di))}</td><td></td></tr>`;
 
             if (first.length > 1) {
                 html += `<tr class="char-row"><td class="stroke-text">${f2}</td><td class="char-text">${first[1]}</td><td class="num-text">${di}</td><td class="wx-text">${getWX(di)}</td><td class="ge-label">地格</td></tr>`;
@@ -191,10 +169,54 @@
                 html += `<tr class="char-row"><td class="stroke-text">1</td><td></td><td class="num-text">${di}</td><td class="wx-text">${getWX(di)}</td><td class="ge-label">地格</td></tr>`;
             }
 
-            document.getElementById('resultTable').innerHTML = html;
+            table.innerHTML = html;
             document.getElementById('totalBox').innerText = "總格 ： " + zong;
             document.getElementById('resultFrame').style.display = "block";
-            document.getElementById('yearlySection').style.display = "block"; // 鑑定完才顯示流年輸入
+            document.getElementById('yearlySection').style.display = "block"; 
+        }
+
+        function calculateYearFortune() {
+            const YY = parseInt(document.getElementById('yearCurrent').value);
+            const bDateStr = document.getElementById('birthDate').value;
+            if (!YY || !bDateStr) { alert("請填寫流年年份與生日"); return; }
+
+            const bDate = new Date(bDateStr);
+            const XX = bDate.getFullYear() - 1911;
+            const bMonth = bDate.getMonth() + 1;
+
+            let baseAge = YY - XX + 1;
+            let finalAge = baseAge;
+            if (bMonth >= 8) finalAge += 1;
+            if (bMonth <= 6) finalAge -= 1; 
+
+            const zongStr = document.getElementById('totalBox').innerText;
+            const zong = parseInt(zongStr.replace(/\D/g, ''));
+            const cycle = ["長生", "沐浴", "冠帶", "臨官", "帝旺", "衰", "病", "死", "墓", "胎", "養", "絕"];
+            
+            const startTen = zong % 10;
+            const endTen = finalAge % 10;
+            const steps = (endTen - startTen + 10) % 10;
+            const finalIndex = (startTen + steps) % 12;
+
+            let startYear = XX + baseAge - 1;
+            let startMonth = bMonth - 6;
+            if (startMonth <= 0) { startMonth += 12; startYear -= 1; }
+            let endYear = XX + baseAge - 1;
+            let endMonth = bMonth + 6;
+            if (endMonth > 12) { endMonth -= 12; endYear += 1; }
+
+            const resultDiv = document.getElementById('fortuneResult');
+            resultDiv.innerHTML = `
+                <div class="range-arrow">
+                    <span>民國 ${startYear}年 ${startMonth}月</span>
+                    <div class="arrow-line"></div>
+                    <span style="color:red; min-width:50px;">${finalAge} 歲</span>
+                    <div class="arrow-line"></div>
+                    <span>民國 ${endYear}年 ${endMonth}月</span>
+                </div>
+                <div style="font-size: 22px; font-weight: bold; color: maroon;">流年運勢：${cycle[finalIndex]}</div>
+            `;
+            document.getElementById('totalBox').innerHTML = `總格 ： ${zong} <span style="font-size:20px; color:blue;">(${cycle[finalIndex]})</span>`;
         }
     </script>
 </body>
